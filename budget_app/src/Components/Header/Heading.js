@@ -7,8 +7,8 @@ const HeadingWrapper = styled.div`
 
     width:100%;
     height:75px;
-    background-color: rgba(167,228,124,0.8);
-
+    background-color: rgba(243, 166, 131,1.0);
+    color:white;
     border: 1px solid black;;
 `;
 

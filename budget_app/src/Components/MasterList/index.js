@@ -16,8 +16,8 @@ const MasterWrapper = styled.div `
 const MasterList = props => {
     return(
     <MasterWrapper>
-        {props.totalExpenses.map(exspense => {
-            return <DetailComponent exspense = {exspense}  />
+        {props.totalExpenses.map((exspense, index) => {
+            return <DetailComponent exspense = {exspense} key={index} index={index} handleUpdate={props.handleUpdate}  />
         })} 
 
     </MasterWrapper>
