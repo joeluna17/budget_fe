@@ -1,116 +1,229 @@
-import React from 'react';
-import Header from './Components/Header';
-import MasterList from './Components/MasterList';
-import './App.css';
-import { ThemeProvider } from 'styled-components';
+import React from "react";
+import Header from "./Components/Header";
+import MasterList from "./Components/MasterList";
+import "./App.css";
+import { ThemeProvider, keyframes } from "styled-components";
+import styled from "styled-components";
+import ActionModal from "./Components/GlobalComponent/ActionModal";
+import SliderProto from "./Components/GlobalComponent/Slider";
+
+const CalculatorWrapper = styled.div`
+  position: fixed;
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  height: 140px;
+  background-color: rgba(0, 0, 0, 0.95);
+  color: white;
+  z-index: 9999;
+`;
+// for the above component we need to add a listen to the window for on scroll and then make the div go from displaying block to fixed
+const rotate = keyframes`
+    from{
+      transform: rotate(0deg);
+    }
+    to{
+      transform: rotate(360deg);
+    }
+`
+
+
+const ButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  right: 20px;
+  bottom: 5px;
+  width: 65px;
+  height: 65px;
+  color: white;
+  background-color: rgba(27, 156, 252, 1);
+  font-size: 65px;
+  border-radius: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 14px 0 rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  :hover {animation: ${rotate} 0.2s linear 2 ;}
+`;
+
+
+let marks = [
+  { value: 0 },
+  { value: 10 },
+  { value: 20 },
+  { value: 30 },
+  { value: 40 },
+  { value: 50 }
+];
 
 class App extends React.Component {
-    constructor(props) {
-      super(props)
+  constructor(props) {
+    super(props);
 
-      this.state = {
-        totalExpenses: [],
-        totalIncome: [],
-        totalExpensesAmount: 0,
-        totalIncomeAmount: 5200.00
-      };
-    } 
+    this.state = {
+      accounts: [],
+      totalExpensesAmount: 0.0,
+      totalIncomeAmount: 0.0,
+      savingAmount: 0.0,
+      show: false
+    };
+  }
 
   componentDidMount() {
-    this.setState( {
-        totalExpenses: [
-          {
-          
-            name: "Light",
-            paymentAmount:150.60,
-            value:0
-          },{
-           
-            name: "Water",
-            paymentAmount:75.00,
-            value:0
-          },{
-          
-            name: "Cable",
-            paymentAmount:59.00,
-            value:0
-          },
-          {
-          
-            name: "Vehicle 1",
-            paymentAmount:750.00,
-            value:0
-          },
-          {
-          
-            name: "Rent",
-            paymentAmount:1600.00,
-            value:0
-          }
-
-        ]
-
-      }
-   )
-  }
-
-  calculateTotalExpenses = () => {
-    var totalAmount = 0;
- 
-     const total = this.state.totalExpenses.map(exspense => {
-                return totalAmount += exspense.value;
-     }); 
-
-     return totalAmount;
-  }
-
- addIncome = () => {
-
-}
-
-addExspense = () =>{
-
-}
-    
-handleUpdate = (e, value, index) => {
-//OK, here we needed to drill into state and update a propery in the array but in order to do this we need to access the property via the map because it does not mutate the array on state rather returns a new one 
-//read the following article for info -> https://www.robinwieruch.de/react-state-array-add-update-remove 
-    this.setState( state => {
-        const list = state.totalExpenses.map((exspense, j) => {
-            if(j === index ){
-              return exspense.value = value;
-             }else {
-              return exspense;
-             }
-        });
-        return{
-          list
+    this.setState({
+      accounts: [
+        {
+          name: "Light",
+          value: 0.0,
+          type: "exspense"
         },
-
-        state.totalExpensesAmount = this.calculateTotalExpenses();
-
+        {
+          name: "Water",
+          type: "exspense",
+          value: 0.0
+        },
+        {
+          name: "Cable",
+          type: "exspense",
+          value: 0.0
+        },
+        {
+          name: "Vehicle 1",
+          type: "exspense",
+          value: 0
+        },
+        {
+          name: "Rent",
+          type: "exspense",
+          value: 0.0
+        },
+        {
+          name: "Income 1",
+          type: "income",
+          value: 0.0
+        },
+        {
+          name: "Income 2",
+          type: "income",
+          value: 0.0
+        }
+      ]
     });
-  
-    
-}
+  }
+
+  calculateTotalExpenses = type => {
+    var totalAmount = 0;
+
+    const total = this.state.accounts.map(account => {
+      if (account.type === type) {
+        return (totalAmount += account.value);
+      }
+    });
+
+    return totalAmount;
+  };
+
+  handleUpdate = (e, value, index, type) => {
+    //OK, here we needed to drill into state and update a propery in the array but in order to do this we need to access the property via the map because it does not mutate the array on state rather returns a new one
+    //read the following article for info -> https://www.robinwieruch.de/react-state-array-add-update-remove
+
+    this.setState(state => {
+      const list = state.accounts.map((account, j) => {
+        if (j === index && account.type === type) {
+          return (account.value = value);
+        } else {
+          return account;
+        }
+      });
+      return list;
+    });
+    if (type === "exspense") {
+      this.setState({
+        totalExpensesAmount: this.calculateTotalExpenses(type)
+      });
+    } else if (type === "income") {
+      this.setState({
+        totalIncomeAmount: this.calculateTotalExpenses(type)
+      });
+    }
+  };
+
+  addAccount = (account) => {
+        this.setState({
+            accounts: [...this.state.accounts, account]
+        })
+  }
+
+  handleClose = e => {
+    this.setState({
+      show: false
+    });
+    console.log(this.state.show);
+  };
+
+  handleShow = e => {
+    console.log(this.state.show);
+    this.setState({
+      show: true
+    });
+  };
+
+  handleUpdateSavings = (e, value) => {
+    this.setState({
+      savingAmount: value
+    });
+  };
 
   render() {
-    return(
-     //console.log(this.state.totalExpenses[0]? this.state.totalExpenses[0]['value'] : null),
-   
-    <div className="App">
+    return (
+      //console.log(this.state.totalExpenses[0]? this.state.totalExpenses[0]['value'] : null),
 
+      <div className="App">
+        <CalculatorWrapper>
+          <h2>
+            Total Expenses: <br /> ${this.state.totalExpensesAmount}
+          </h2>
+          <h2>
+            Total Income: <br /> ${this.state.totalIncomeAmount}
+          </h2>
+          <h2>
+            Total Disposable:
+            <br /> $
+            {this.state.totalIncomeAmount - this.state.totalExpensesAmount}
+          </h2>
+          <h2>
+            Saving From Disposable:
+            <br /> $
+            {((this.state.totalIncomeAmount - this.state.totalExpensesAmount) *
+              this.state.savingAmount) /
+              100}
+            <SliderProto
+              valueLabelDisplay="on"
+              track={true}
+              marks={marks}
+              defaultValue={0}
+              min={0}
+              max={50}
+              onChange={(e, value) => {
+                this.handleUpdateSavings(e, value);
+              }}
+            />
+          </h2>
+        </CalculatorWrapper>
         <Header />
-        <div>
-          <h1>Total Expenses: ${this.state.totalExpensesAmount}</h1>
-         <h1>Total Income: ${this.state.totalIncomeAmount}</h1>
-         <h1>Total Disposable: ${this.state.totalIncomeAmount - this.state.totalExpensesAmount}</h1>
-         <h1>Saving From Disposable: ${(this.state.totalIncomeAmount - this.state.totalExpensesAmount)*0.10}</h1>
-         </div>
-        <MasterList totalExpenses={this.state.totalExpenses} handleUpdate={this.handleUpdate} />
-    </div>
-    )
-  };
+        <MasterList
+          accounts={this.state.accounts}
+          handleUpdate={this.handleUpdate}
+         
+        />
+
+        <ButtonWrapper onClick={this.handleShow}>+</ButtonWrapper>
+
+        <ActionModal show={this.state.show} handleClose={this.handleClose} addAccount={this.addAccount} />
+      </div>
+    );
+  }
 }
 
 export default App;

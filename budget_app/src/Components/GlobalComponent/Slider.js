@@ -52,6 +52,12 @@ import { Modal } from '@material-ui/core';
       height: 8,
       borderRadius: 4,
     },
+    mark: {
+      backgroundColor: '#bfbfbf',
+      height: 8,
+      width: 1,
+      marginTop: -3,
+    },
   })(Slider);
 
   export default SliderProto;

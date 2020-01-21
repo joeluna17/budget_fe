@@ -7,7 +7,7 @@ const MasterWrapper = styled.div `
     justify-content:center;
     align-items:center;
     flex-flow: column wrap;
-    margin: 0 auto;
+    margin: 4% auto 0 auto;
     width:100%;
 `
 
@@ -16,8 +16,8 @@ const MasterWrapper = styled.div `
 const MasterList = props => {
     return(
     <MasterWrapper>
-        {props.totalExpenses.map((exspense, index) => {
-            return <DetailComponent exspense = {exspense} key={index} index={index} handleUpdate={props.handleUpdate}  />
+        {props.accounts.map((account, index) => {
+            return <DetailComponent account = {account} key={index} index={index} handleUpdate={props.handleUpdate} />
         })} 
 
     </MasterWrapper>
