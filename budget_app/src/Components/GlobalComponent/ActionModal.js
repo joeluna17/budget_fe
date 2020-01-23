@@ -22,7 +22,7 @@ const ActionModal = props => {
       const account = {
        name :  name.toUpperCase(),
        type : type,
-       value: value
+       value: parseInt(value)
       };
 
     return (

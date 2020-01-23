@@ -6,6 +6,7 @@ import { ThemeProvider, keyframes } from "styled-components";
 import styled from "styled-components";
 import ActionModal from "./Components/GlobalComponent/ActionModal";
 import SliderProto from "./Components/GlobalComponent/Slider";
+import { green } from "@material-ui/core/colors";
 
 const CalculatorWrapper = styled.div`
   position: fixed;
@@ -15,7 +16,7 @@ const CalculatorWrapper = styled.div`
   height: 140px;
   background-color: rgba(0, 0, 0, 0.95);
   color: white;
-  z-index: 9999;
+  z-index: 2;
 `;
 // for the above component we need to add a listen to the window for on scroll and then make the div go from displaying block to fixed
 const rotate = keyframes`
@@ -25,8 +26,7 @@ const rotate = keyframes`
     to{
       transform: rotate(360deg);
     }
-`
-
+`;
 
 const ButtonWrapper = styled.div`
   display: flex;
@@ -44,8 +44,19 @@ const ButtonWrapper = styled.div`
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 8px 14px 0 rgba(0, 0, 0, 0.4);
   cursor: pointer;
-  :hover {animation: ${rotate} 0.2s linear 2 ;}
+  :hover {
+    animation: ${rotate} 0.2s linear 1;
+  }
 `;
+
+const ExspenseAmountColor = styled.h1 `
+    color: red;
+`;
+
+const IncomeAmountColor = styled(ExspenseAmountColor)`
+      color: greenyellow;
+`;
+
 
 
 let marks = [
@@ -79,37 +90,39 @@ class App extends React.Component {
           type: "exspense"
         },
         {
-          name: "Water",
+          name: "WATER",
           type: "exspense",
           value: 0.0
         },
         {
-          name: "Cable",
+          name: "CABLE",
           type: "exspense",
           value: 0.0
         },
         {
-          name: "Vehicle 1",
-          type: "exspense",
-          value: 0
-        },
-        {
-          name: "Rent",
+          name: "RAM TRUCK",
           type: "exspense",
           value: 0.0
         },
         {
-          name: "Income 1",
+          name: "HOUSE RENT",
+          type: "exspense",
+          value: 0.0
+        },
+        {
+          name: "CALUDIA",
           type: "income",
           value: 0.0
         },
         {
-          name: "Income 2",
+          name: "JOE",
           type: "income",
           value: 0.0
         }
       ]
     });
+
+    console.log("Here in the CDL state.accounts: ", this.state.accounts);
   }
 
   calculateTotalExpenses = type => {
@@ -149,11 +162,25 @@ class App extends React.Component {
     }
   };
 
-  addAccount = (account) => {
-        this.setState({
-            accounts: [...this.state.accounts, account]
+  addAccount = async (account) => {
+
+    await this.setState({
+      accounts: [...this.state.accounts, account]
+    });
+
+   
+       if (account.type === "exspense") {
+       await this.setState({
+          totalExpensesAmount: this.calculateTotalExpenses(account.type)
+        });
+      } else if (account.type === "income") {
+       await this.setState({
+          totalIncomeAmount: this.calculateTotalExpenses(account.type)
         })
-  }
+      }
+    
+    console.log(this.state.accounts);
+  };
 
   handleClose = e => {
     this.setState({
@@ -182,10 +209,10 @@ class App extends React.Component {
       <div className="App">
         <CalculatorWrapper>
           <h2>
-            Total Expenses: <br /> ${this.state.totalExpensesAmount}
+            Total Expenses: <br /> <ExspenseAmountColor>${this.state.totalExpensesAmount}</ExspenseAmountColor>
           </h2>
           <h2>
-            Total Income: <br /> ${this.state.totalIncomeAmount}
+            Total Income: <br /> <IncomeAmountColor>${this.state.totalIncomeAmount}</IncomeAmountColor>
           </h2>
           <h2>
             Total Disposable:
@@ -215,12 +242,15 @@ class App extends React.Component {
         <MasterList
           accounts={this.state.accounts}
           handleUpdate={this.handleUpdate}
-         
         />
 
         <ButtonWrapper onClick={this.handleShow}>+</ButtonWrapper>
 
-        <ActionModal show={this.state.show} handleClose={this.handleClose} addAccount={this.addAccount} />
+        <ActionModal
+          show={this.state.show}
+          handleClose={this.handleClose}
+          addAccount={this.addAccount}
+        />
       </div>
     );
   }
