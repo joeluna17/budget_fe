@@ -17,7 +17,7 @@ const MasterList = props => {
     return(
     <MasterWrapper>
         {props.accounts.map((account, index) => {
-            return <DetailComponent account = {account} key={index} index={index} handleUpdate={props.handleUpdate} />
+            return <DetailComponent id={account.id} account = {account} key={index} index={index} handleUpdate={props.handleUpdate} deleteAccount={props.deleteAccount} />
         })} 
 
     </MasterWrapper>

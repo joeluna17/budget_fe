@@ -7,6 +7,7 @@ import styled from "styled-components";
 import ActionModal from "./Components/GlobalComponent/ActionModal";
 import SliderProto from "./Components/GlobalComponent/Slider";
 import { green } from "@material-ui/core/colors";
+import axios from "axios";
 
 const CalculatorWrapper = styled.div`
   position: fixed;
@@ -49,15 +50,13 @@ const ButtonWrapper = styled.div`
   }
 `;
 
-const ExspenseAmountColor = styled.h1 `
-    color: red;
+const ExspenseAmountColor = styled.h1`
+  color: red;
 `;
 
 const IncomeAmountColor = styled(ExspenseAmountColor)`
-      color: greenyellow;
+  color: greenyellow;
 `;
-
-
 
 let marks = [
   { value: 0 },
@@ -73,56 +72,39 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      accounts: [],
+      accounts: null,
       totalExpensesAmount: 0.0,
       totalIncomeAmount: 0.0,
       savingAmount: 0.0,
-      show: false
+      show: false,
+      userid:1
     };
   }
 
-  componentDidMount() {
-    this.setState({
-      accounts: [
-        {
-          name: "Light",
-          value: 0.0,
-          type: "exspense"
-        },
-        {
-          name: "WATER",
-          type: "exspense",
-          value: 0.0
-        },
-        {
-          name: "CABLE",
-          type: "exspense",
-          value: 0.0
-        },
-        {
-          name: "RAM TRUCK",
-          type: "exspense",
-          value: 0.0
-        },
-        {
-          name: "HOUSE RENT",
-          type: "exspense",
-          value: 0.0
-        },
-        {
-          name: "CALUDIA",
-          type: "income",
-          value: 0.0
-        },
-        {
-          name: "JOE",
-          type: "income",
-          value: 0.0
-        }
-      ]
-    });
+   getData(id) {
+    axios.get(`http://localhost:4000/users/accounts/${id}`).then(res => {
+      const data = res.data;
+      this.setState({
+        accounts: data
+      });
+      
+      this.updateAccountTotals("income");
+      this.updateAccountTotals("exspense");
 
-    console.log("Here in the CDL state.accounts: ", this.state.accounts);
+    });
+  }
+
+  deleteAccountFromDB(id) {
+    axios.delete(`http://localhost:4000/users/accounts/remove-account/${id}`).then(res =>{
+      const data = res.data;
+      }).then(res => {
+          this.getData(this.state.userid);
+      });
+    }
+
+  componentDidMount() {
+    this.getData(this.state.userid);
+
   }
 
   calculateTotalExpenses = type => {
@@ -151,36 +133,43 @@ class App extends React.Component {
       });
       return list;
     });
-    if (type === "exspense") {
-      this.setState({
-        totalExpensesAmount: this.calculateTotalExpenses(type)
-      });
-    } else if (type === "income") {
-      this.setState({
-        totalIncomeAmount: this.calculateTotalExpenses(type)
-      });
-    }
+    this.updateAccountTotals(type)
   };
 
-  addAccount = async (account) => {
-
+  addAccount = async account => {
     await this.setState({
       accounts: [...this.state.accounts, account]
     });
 
-   
-       if (account.type === "exspense") {
-       await this.setState({
-          totalExpensesAmount: this.calculateTotalExpenses(account.type)
-        });
-      } else if (account.type === "income") {
-       await this.setState({
-          totalIncomeAmount: this.calculateTotalExpenses(account.type)
-        })
-      }
-    
+    if (account.type === "exspense") {
+      await this.setState({
+        totalExpensesAmount: this.calculateTotalExpenses(account.type)
+      });
+    } else if (account.type === "income") {
+      await this.setState({
+        totalIncomeAmount: this.calculateTotalExpenses(account.type)
+      });
+    }
+
     console.log(this.state.accounts);
   };
+
+  updateAccountTotals = type =>{
+    if (type === "exspense") {
+        this.setState({
+        totalExpensesAmount: this.calculateTotalExpenses(type)
+      });
+    } else if (type === "income") {
+        this.setState({
+        totalIncomeAmount: this.calculateTotalExpenses(type)
+      });
+    }
+
+  }
+
+  deleteAccount = (id) => {
+      this.deleteAccountFromDB(id)
+  }
 
   handleClose = e => {
     this.setState({
@@ -202,17 +191,25 @@ class App extends React.Component {
     });
   };
 
+//http://localhost:4000/users/accounts/remove-account/5
+
   render() {
     return (
       //console.log(this.state.totalExpenses[0]? this.state.totalExpenses[0]['value'] : null),
-
+        console.log(this.state.accounts),
       <div className="App">
         <CalculatorWrapper>
           <h2>
-            Total Expenses: <br /> <ExspenseAmountColor>${this.state.totalExpensesAmount}</ExspenseAmountColor>
+            Total Expenses: <br />{" "}
+            <ExspenseAmountColor>
+              ${this.state.totalExpensesAmount}
+            </ExspenseAmountColor>
           </h2>
           <h2>
-            Total Income: <br /> <IncomeAmountColor>${this.state.totalIncomeAmount}</IncomeAmountColor>
+            Total Income: <br />{" "}
+            <IncomeAmountColor>
+              ${this.state.totalIncomeAmount}
+            </IncomeAmountColor>
           </h2>
           <h2>
             Total Disposable:
@@ -239,13 +236,12 @@ class App extends React.Component {
           </h2>
         </CalculatorWrapper>
         <Header />
-        <MasterList
+        {this.state.accounts !== null? <MasterList
           accounts={this.state.accounts}
           handleUpdate={this.handleUpdate}
-        />
-
+          deleteAccount={this.deleteAccount}
+        /> : <><h1>LOADING...</h1></>}
         <ButtonWrapper onClick={this.handleShow}>+</ButtonWrapper>
-
         <ActionModal
           show={this.state.show}
           handleClose={this.handleClose}
