@@ -25,7 +25,7 @@ const rotate = keyframes`
       transform: rotate(0deg);
     }
     to{
-      transform: rotate(360deg);
+      transform: rotate(180deg);
     }
 `;
 
@@ -35,7 +35,7 @@ const ButtonWrapper = styled.div`
   align-items: center;
   position: fixed;
   right: 20px;
-  bottom: 5px;
+  bottom: 10px;
   width: 65px;
   height: 65px;
   color: white;
@@ -43,7 +43,7 @@ const ButtonWrapper = styled.div`
   font-size: 65px;
   border-radius: 100%;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 8px 14px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0px 12px 0 rgba(0, 0, 0, 0.8);
   cursor: pointer;
   :hover {
     animation: ${rotate} 0.2s linear 1;
@@ -77,34 +77,46 @@ class App extends React.Component {
       totalIncomeAmount: 0.0,
       savingAmount: 0.0,
       show: false,
-      userid:1
+      userid: 1
     };
   }
 
-   getData(id) {
+  getData(id) {
     axios.get(`http://localhost:4000/users/accounts/${id}`).then(res => {
       const data = res.data;
       this.setState({
         accounts: data
       });
-      
+
       this.updateAccountTotals("income");
       this.updateAccountTotals("exspense");
-
     });
   }
 
   deleteAccountFromDB(id) {
-    axios.delete(`http://localhost:4000/users/accounts/remove-account/${id}`).then(res =>{
-      const data = res.data;
-      }).then(res => {
-          this.getData(this.state.userid);
+    axios
+      .delete(`http://localhost:4000/users/accounts/remove-account/${id}`)
+      .then(res => {
+        const data = res.data;
+      })
+      .then(res => {
+        this.getData(this.state.userid);
       });
-    }
+  }
+
+  addAccountToDB(account) {
+    axios
+      .post(`http://localhost:4000/users/accounts/add-account`, account)
+      .then(res => {
+        const account = res.data;
+      })
+      .then(res => {
+        this.getData(this.state.userid);
+      });
+  }
 
   componentDidMount() {
     this.getData(this.state.userid);
-
   }
 
   calculateTotalExpenses = type => {
@@ -133,7 +145,7 @@ class App extends React.Component {
       });
       return list;
     });
-    this.updateAccountTotals(type)
+    this.updateAccountTotals(type);
   };
 
   addAccount = async account => {
@@ -154,22 +166,25 @@ class App extends React.Component {
     console.log(this.state.accounts);
   };
 
-  updateAccountTotals = type =>{
+  saveAccount = account => {
+    this.addAccountToDB(account);
+  };
+
+  updateAccountTotals = type => {
     if (type === "exspense") {
-        this.setState({
+      this.setState({
         totalExpensesAmount: this.calculateTotalExpenses(type)
       });
     } else if (type === "income") {
-        this.setState({
+      this.setState({
         totalIncomeAmount: this.calculateTotalExpenses(type)
       });
     }
+  };
 
-  }
-
-  deleteAccount = (id) => {
-      this.deleteAccountFromDB(id)
-  }
+  deleteAccount = id => {
+    this.deleteAccountFromDB(id);
+  };
 
   handleClose = e => {
     this.setState({
@@ -191,63 +206,74 @@ class App extends React.Component {
     });
   };
 
-//http://localhost:4000/users/accounts/remove-account/5
-
   render() {
     return (
       //console.log(this.state.totalExpenses[0]? this.state.totalExpenses[0]['value'] : null),
-        console.log(this.state.accounts),
-      <div className="App">
-        <CalculatorWrapper>
-          <h2>
-            Total Expenses: <br />{" "}
-            <ExspenseAmountColor>
-              ${this.state.totalExpensesAmount}
-            </ExspenseAmountColor>
-          </h2>
-          <h2>
-            Total Income: <br />{" "}
-            <IncomeAmountColor>
-              ${this.state.totalIncomeAmount}
-            </IncomeAmountColor>
-          </h2>
-          <h2>
-            Total Disposable:
-            <br /> $
-            {this.state.totalIncomeAmount - this.state.totalExpensesAmount}
-          </h2>
-          <h2>
-            Saving From Disposable:
-            <br /> $
-            {((this.state.totalIncomeAmount - this.state.totalExpensesAmount) *
-              this.state.savingAmount) /
-              100}
-            <SliderProto
-              valueLabelDisplay="on"
-              track={true}
-              marks={marks}
-              defaultValue={0}
-              min={0}
-              max={50}
-              onChange={(e, value) => {
-                this.handleUpdateSavings(e, value);
-              }}
+      console.log(this.state.accounts),
+      (
+        <div className="App">
+          <CalculatorWrapper>
+            <h2>
+              Total Expenses: <br />{" "}
+              <ExspenseAmountColor>
+                ${this.state.totalExpensesAmount}
+              </ExspenseAmountColor>
+            </h2>
+            <h2>
+              Total Income: <br />{" "}
+              <IncomeAmountColor>
+                ${this.state.totalIncomeAmount}
+              </IncomeAmountColor>
+            </h2>
+            <h2>
+              Total Disposable:
+              <br /> $
+              {this.state.totalIncomeAmount - this.state.totalExpensesAmount}
+            </h2>
+            <h2>
+              Saving From Disposable:
+              <br /> $
+              {((this.state.totalIncomeAmount -
+                this.state.totalExpensesAmount) *
+                this.state.savingAmount) /
+                100}
+              <SliderProto
+                valueLabelDisplay="on"
+                track={true}
+                marks={marks}
+                defaultValue={0}
+                min={0}
+                max={50}
+                onChange={(e, value) => {
+                  this.handleUpdateSavings(e, value);
+                }}
+              />
+            </h2>
+          </CalculatorWrapper>
+          <Header />
+          {this.state.accounts !== null ? (
+            <MasterList
+              accounts={this.state.accounts}
+              handleUpdate={this.handleUpdate}
+              deleteAccount={this.deleteAccount}
+              totalExpensesAmount={this.state.totalExpensesAmount}
+              totalIncomeAmount={this.state.totalIncomeAmount} 
+
             />
-          </h2>
-        </CalculatorWrapper>
-        <Header />
-        {this.state.accounts !== null? <MasterList
-          accounts={this.state.accounts}
-          handleUpdate={this.handleUpdate}
-          deleteAccount={this.deleteAccount}
-        /> : <><h1>LOADING...</h1></>}
-        <ButtonWrapper onClick={this.handleShow}>+</ButtonWrapper>
-        <ActionModal
-          show={this.state.show}
-          handleClose={this.handleClose}
-          addAccount={this.addAccount}
-        />
-      </div>
+          ) : (
+            <>
+              <h1>LOADING...</h1>
+            </>
+          )}
+          <ButtonWrapper onClick={this.handleShow}><p>+</p></ButtonWrapper>
+          <ActionModal
+            userid={this.state.userid}
+            show={this.state.show}
+            handleClose={this.handleClose}
+            saveAccount={this.saveAccount}
+          />
+        </div>
+      )
     );
   }
 }

@@ -1,11 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 import SliderProto from "../GlobalComponent/Slider";
+import DonutChart from "../GlobalComponent/DonutChart";
 
 const DetailWrapper = styled.div`
+  display:flex;
+  flex-flow:row wrap;
   position: relative;
   width: 80%;
-  height: 240px;
+  height: 300px;
   border-radius: 8px;
   box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.3);
@@ -17,6 +20,7 @@ const DetailTopWrapperExspense = styled.div`
   align-items: center;
   justify-content: center;
   flex-flow: column wrap;
+  width:100%;
   height: 50%;
   border-bottom: 1px solid black;
   background-color: rgba(52, 73, 94, 1);
@@ -29,6 +33,7 @@ const DetailTopWrapperIncome = styled.div`
   align-items: center;
   justify-content: center;
   flex-flow: column wrap;
+  width:100%;
   height: 50%;
   border-bottom: 1px solid black;
   background-color: rgba(130, 88, 159, 1);
@@ -44,7 +49,15 @@ const SliderWrapper = styled.div`
   height: 50%;
   width: 50%;
   margin-left: 5%;
+  
 `;
+
+const ChartWrapper = styled.div`
+    display:flex;
+    justify-content: center;
+    align-items:center;
+    width:45%;
+`
 
 const DeleteButton = styled.button`
   display: flex;
@@ -104,6 +117,9 @@ const DetailCompontent = props => {
           />
           <SaveButton onClick={e => alert("saving")}>SAVE</SaveButton>
         </SliderWrapper>
+        <ChartWrapper>
+            <DonutChart title = {props.account.name} subTitle = {props.account.name} dataPoints= {[{name: props.account.name, y:props.account.value, exploded:TextTrackCue},{name: "Exspense", y:props.totalExpensesAmount}]}/>
+        </ChartWrapper>
       </DetailWrapper>
     );
   } else if (props.account.type === "income") {
