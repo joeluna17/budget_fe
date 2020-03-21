@@ -8,6 +8,7 @@ import ActionModal from "./Components/GlobalComponent/ActionModal";
 import SliderProto from "./Components/GlobalComponent/Slider";
 import { green } from "@material-ui/core/colors";
 import axios from "axios";
+import Toast from "../src/Components/GlobalComponent/Toast";
 
 const CalculatorWrapper = styled.div`
   position: fixed;
@@ -77,8 +78,11 @@ class App extends React.Component {
       totalIncomeAmount: 0.0,
       savingAmount: 0.0,
       show: false,
-      userid: 1
+      userid: 1,
+      showToast: false
     };
+    this.getData = this.getData.bind(this);
+    this.handleUpdateExpenseValue = this.handleUpdateExpenseValue.bind(this);
   }
 
   getData(id) {
@@ -206,74 +210,100 @@ class App extends React.Component {
     });
   };
 
+  handleUpdateExpenseValue(id, value) {
+    axios
+      .put(`http://localhost:4000/users/accounts/update-account/${id}`, {
+        value
+      })
+      .then(() => {
+        this.getData(this.state.userid);
+      })
+      .catch(error => console.log(error))
+      .finally(() => {
+        this.setState({
+          showToast: true
+        });
+      });
+  }
+
+
+  handleShowToast = (secs) => {
+    setTimeout(()=>{
+      this.setState({
+        showToast: !this.state.showToast
+      })}, 
+      secs
+    )
+  }
+
   render() {
     return (
       //console.log(this.state.totalExpenses[0]? this.state.totalExpenses[0]['value'] : null),
-      console.log(this.state.accounts),
-      (
-        <div className="App">
-          <CalculatorWrapper>
-            <h2>
-              Total Expenses: <br />{" "}
-              <ExspenseAmountColor>
-                ${this.state.totalExpensesAmount}
-              </ExspenseAmountColor>
-            </h2>
-            <h2>
-              Total Income: <br />{" "}
-              <IncomeAmountColor>
-                ${this.state.totalIncomeAmount}
-              </IncomeAmountColor>
-            </h2>
-            <h2>
-              Total Disposable:
-              <br /> $
-              {this.state.totalIncomeAmount - this.state.totalExpensesAmount}
-            </h2>
-            <h2>
-              Saving From Disposable:
-              <br /> $
-              {((this.state.totalIncomeAmount -
-                this.state.totalExpensesAmount) *
-                this.state.savingAmount) /
-                100}
-              <SliderProto
-                valueLabelDisplay="on"
-                track={true}
-                marks={marks}
-                defaultValue={0}
-                min={0}
-                max={50}
-                onChange={(e, value) => {
-                  this.handleUpdateSavings(e, value);
-                }}
-              />
-            </h2>
-          </CalculatorWrapper>
-          <Header />
-          {this.state.accounts !== null ? (
-            <MasterList
-              accounts={this.state.accounts}
-              handleUpdate={this.handleUpdate}
-              deleteAccount={this.deleteAccount}
-              totalExpensesAmount={this.state.totalExpensesAmount}
-              totalIncomeAmount={this.state.totalIncomeAmount} 
-
+      <div className="App">
+        <Toast show={this.state.showToast}  />
+        <CalculatorWrapper>
+          <h2>
+            Total Expenses: <br />{" "}
+            <ExspenseAmountColor>
+              ${this.state.totalExpensesAmount}
+            </ExspenseAmountColor>
+          </h2>
+          <h2>
+            Total Income: <br />{" "}
+            <IncomeAmountColor>
+              ${this.state.totalIncomeAmount}
+            </IncomeAmountColor>
+          </h2>
+          <h2>
+            Total Disposable:
+            <br /> $
+            {this.state.totalIncomeAmount - this.state.totalExpensesAmount}
+          </h2>
+          <h2>
+            Saving From Disposable:
+            <br /> $
+            {((this.state.totalIncomeAmount - this.state.totalExpensesAmount) *
+              this.state.savingAmount) /
+              100}
+            <SliderProto
+              valueLabelDisplay="on"
+              track={true}
+              marks={marks}
+              defaultValue={0}
+              min={0}
+              max={50}
+              onChange={(e, value) => {
+                this.handleUpdateSavings(e, value);
+              }}
             />
-          ) : (
-            <>
-              <h1>LOADING...</h1>
-            </>
-          )}
-          <ButtonWrapper onClick={this.handleShow}><p>+</p></ButtonWrapper>
-          <ActionModal
-            userid={this.state.userid}
-            show={this.state.show}
-            handleClose={this.handleClose}
-            saveAccount={this.saveAccount}
+          </h2>
+        </CalculatorWrapper>
+        <Header />
+        {this.state.accounts !== null ? (
+          <MasterList
+            accounts={this.state.accounts}
+            handleUpdate={this.handleUpdate}
+            deleteAccount={this.deleteAccount}
+            totalExpensesAmount={this.state.totalExpensesAmount}
+            totalIncomeAmount={this.state.totalIncomeAmount}
+            handleUpdateExpenseValue={this.handleUpdateExpenseValue}
+            handleShowToast={this.handleShowToast}
           />
-        </div>
-      )
+        ) : (
+          <>
+            <h1>LOADING...</h1>
+          </>
+        )}
+        <ButtonWrapper onClick={this.handleShow}>
+          <p>+</p>
+        </ButtonWrapper>
+        <ActionModal
+          userid={this.state.userid}
+          show={this.state.show}
+          handleClose={this.handleClose}
+          saveAccount={this.saveAccount}
+        />
+      </div>
     );
   }
 }

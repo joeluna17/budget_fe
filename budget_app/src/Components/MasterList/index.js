@@ -25,6 +25,8 @@ const MasterList = props => {
             deleteAccount={props.deleteAccount}
             totalExpensesAmount={props.totalExpensesAmount}
             totalIncomeAmount={props.totalIncomeAmount}
+            handleUpdateExpenseValue={props.handleUpdateExpenseValue}
+            handleShowToast={props.handleShowToast}
           />
         );
       })}

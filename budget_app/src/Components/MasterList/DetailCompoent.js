@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import SliderProto from "../GlobalComponent/Slider";
 import DonutChart from "../GlobalComponent/DonutChart";
 
 const DetailWrapper = styled.div`
-  display:flex;
-  flex-flow:row wrap;
+  display: flex;
+  flex-flow: row wrap;
   position: relative;
   width: 80%;
   height: 300px;
@@ -20,7 +20,7 @@ const DetailTopWrapperExspense = styled.div`
   align-items: center;
   justify-content: center;
   flex-flow: column wrap;
-  width:100%;
+  width: 100%;
   height: 50%;
   border-bottom: 1px solid black;
   background-color: rgba(52, 73, 94, 1);
@@ -33,7 +33,7 @@ const DetailTopWrapperIncome = styled.div`
   align-items: center;
   justify-content: center;
   flex-flow: column wrap;
-  width:100%;
+  width: 100%;
   height: 50%;
   border-bottom: 1px solid black;
   background-color: rgba(130, 88, 159, 1);
@@ -49,15 +49,14 @@ const SliderWrapper = styled.div`
   height: 50%;
   width: 50%;
   margin-left: 5%;
-  
 `;
 
 const ChartWrapper = styled.div`
-    display:flex;
-    justify-content: center;
-    align-items:center;
-    width:45%;
-`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 45%;
+`;
 
 const DeleteButton = styled.button`
   display: flex;
@@ -91,12 +90,14 @@ const SaveButton = styled.button`
 `;
 
 const DetailCompontent = props => {
-  // name, amount, slider
+  const [newValue, setNewValue] = useState(null);
 
   if (props.account.type === "exspense") {
     return (
       <DetailWrapper>
-        <DeleteButton onClick={e => props.deleteAccount(props.id)}>X</DeleteButton>
+        <DeleteButton onClick={e => props.deleteAccount(props.id)}>
+          X
+        </DeleteButton>
         <DetailTopWrapperExspense>
           <h2>{props.account.name}</h2>
           <h2>${props.account.value}</h2>
@@ -111,21 +112,53 @@ const DetailCompontent = props => {
             defaultValue={props.account.value || 0.0}
             min={0}
             max={2000.0}
-            onChange={(e, value) =>
-              props.handleUpdate(e, value, props.index, props.account.type)
-            }
+            onChange={(e, value) => {
+              return (
+                setNewValue(value),
+                props.handleUpdate(e, value, props.index, props.account.type)
+              );
+            }}
           />
-          <SaveButton onClick={e => alert("saving")}>SAVE</SaveButton>
+          <SaveButton
+            onClick={
+              !newValue
+                ? null
+                : e => {
+                    return (
+                      props.handleUpdateExpenseValue(
+                        props.id,
+                        parseInt(newValue)
+                      ),
+                      props.handleShowToast(3000)
+                    );
+                  }
+            }
+          >
+            SAVE
+          </SaveButton>
         </SliderWrapper>
         <ChartWrapper>
-            <DonutChart title = {props.account.name} subTitle = {props.account.name} dataPoints= {[{name: props.account.name, y:props.account.value, exploded:TextTrackCue},{name: "Exspense", y:props.totalExpensesAmount}]}/>
+          <DonutChart
+            title={props.account.name}
+            subTitle={props.account.name}
+            dataPoints={[
+              {
+                name: props.account.name,
+                y: props.account.value,
+                exploded: TextTrackCue
+              },
+              { name: "Exspense", y: props.totalExpensesAmount }
+            ]}
+          />
         </ChartWrapper>
       </DetailWrapper>
     );
   } else if (props.account.type === "income") {
     return (
       <DetailWrapper>
-        <DeleteButton onClick={e => props.deleteAccount(props.id)}>X</DeleteButton>
+        <DeleteButton onClick={e => props.deleteAccount(props.id)}>
+          X
+        </DeleteButton>
         <DetailTopWrapperIncome>
           <h2>{props.account.name}</h2>
           <h2>${props.account.value}</h2>
@@ -140,11 +173,30 @@ const DetailCompontent = props => {
             defaultValue={props.account.value || 0.0}
             min={0}
             max={10000.0}
-            onChange={(e, value) =>
-              props.handleUpdate(e, value, props.index, props.account.type)
-            }
+            onChange={(e, value) => {
+              return (
+                setNewValue(value),
+                props.handleUpdate(e, value, props.index, props.account.type)
+              );
+            }}
           />
-          <SaveButton onClick={e => alert("saving")}>SAVE</SaveButton>
+          <SaveButton
+            onClick={
+              !newValue
+                ? null
+                : e => {
+                    return (
+                      props.handleUpdateExpenseValue(
+                        props.id,
+                        parseInt(newValue)
+                      ),
+                      props.handleShowToast(3000)
+                    );
+                  }
+            }
+          >
+            SAVE
+          </SaveButton>
         </SliderWrapper>
       </DetailWrapper>
     );
